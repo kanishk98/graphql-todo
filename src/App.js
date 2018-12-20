@@ -1,26 +1,30 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import firebase from 'firebase';
+
+// Pages in router
+import Login from './components/Login';
+
+// Constants file
+import Constants from './Constants';
+
+firebase.initializeApp(Constants.firebaseConfig);
 
 class App extends Component {
+  static async isLoggedIn() {
+    let loggedIn = await window.localStorage.getItem('loggedIn');
+    console.log(loggedIn);
+    return loggedIn;
+  }
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
+      <BrowserRouter>
+        <Switch>
+          <Route exact path="/login" name="Login Page" component={Login} />
+          <Route path="/" name="Login Page" component={Login} />
+        </Switch>
+      </BrowserRouter>
     );
   }
 }
