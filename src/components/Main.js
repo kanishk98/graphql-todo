@@ -2,12 +2,12 @@ import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { InputGroup, InputGroupAddon, Input, Button } from 'reactstrap';
 import { Query } from 'react-apollo';
-import { todos } from '../graphql';
+import { todos, insert_todo } from '../graphql';
 import { client } from '../index';
 import firebase from 'firebase';
 import Constants from '../Constants';
 import '../styles/Main.css';
-import { postAxios } from '../AxiosUtility';
+import { postAxios, generateUUID } from '../AxiosUtility';
 
 export default class extends React.Component {
 	constructor(props) {
@@ -17,7 +17,6 @@ export default class extends React.Component {
 			text: null
 		};
 	}
-
 
 	getIdToken = async () => {
 		return new Promise((resolve, reject) => {
@@ -41,15 +40,20 @@ export default class extends React.Component {
 		}
 	};
 
-	_onKeyPressed = ({key}) => {
+	_onKeyPressed = ({ key }) => {
 		if (key == 'Enter' && !!this.state.text) {
 			this.sendToDB();
 		}
-	}
+	};
 
-	sendToDB = () => {
-		// add API post logic here
-		console.log('sending to db');
+	sendToDB = async () => {
+		const {text} = this.state;
+		const date = String(new Date().getTime());
+		const todoId = generateUUID();
+		console.log(todoId);
+		const userId = JSON.parse(window.localStorage.getItem(Constants.USER_OBJECT)).uid;
+		const result = await postAxios(insert_todo, {todoId: todoId, text: text, date: date, userId: userId});
+		console.log(result);
 	};
 
 	async componentDidMount() {

@@ -18,6 +18,8 @@ import { Redirect } from 'react-router-dom';
 import App from '../App';
 import Constants from '../Constants';
 import '../styles/Login.css';
+import {postAxios} from '../AxiosUtility';
+import {insert_user} from '../graphql';
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
@@ -43,11 +45,13 @@ class Login extends Component {
       .then(async res => {
         const token = res.credential.accessToken;
         const user = res.user;
+        console.log(res);
         await window.localStorage.setItem(Constants.LOGGED_IN, 'yes');
         await window.localStorage.setItem(Constants.USER_OBJECT, JSON.stringify(user));
         await window.localStorage.setItem(Constants.USER_TOKEN, JSON.stringify(token));
         this.setState({ loggedIn: true });
-        console.log(res);
+        const mutationResult = await postAxios(insert_user, {userId: user.uid, email: user.email, name: user.displayName, profilePic: user.photoURL});
+        console.log(mutationResult);
       })
       .catch(err => {
         console.log(err);
