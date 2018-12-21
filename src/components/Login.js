@@ -55,11 +55,11 @@ class Login extends Component {
   };
 
   render() {
-    if (this.state.loggedIn == true) {
+    /*if (this.state.loggedIn == true) {
       return (
         <Redirect to="/" />
       );
-    }
+    }*/
     return (
       <div>
         <Container>
