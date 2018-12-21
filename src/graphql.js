@@ -2,8 +2,8 @@ import gql from 'graphql-tag';
 
 export const todos = gql`
 	query {
-		todos(order_by: [date_desc]) {
-			id
+		todos {
+			todoId
 			text
 			date
 			completed

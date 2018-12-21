@@ -2,11 +2,10 @@ import React from 'react';
 import { Redirect } from 'react-router-dom';
 import { InputGroup, InputGroupAddon, Input, Button } from 'reactstrap';
 import { Query } from 'react-apollo';
-import TodoInput from './TodoInput';
-import TodoList from './TodoList';
 import { todos } from '../graphql';
 import { client } from '../index';
 import Constants from '../Constants';
+import '../styles/Main.css';
 
 export default class extends React.Component {
 	constructor(props) {
@@ -35,13 +34,7 @@ export default class extends React.Component {
 	componentDidMount() {
 		client
 			.query({
-				query: todos, options: {
-					context: {
-						headers: {
-							'Content-Type': 'application/json'
-						}
-					}
-				}
+				query: todos,
 			})
 			.then(res => {
 				console.log(res);
@@ -57,18 +50,19 @@ export default class extends React.Component {
 			return <Redirect to="/login" />;
 		}
 		return (
-			<>
+			<div className="input">
 				<InputGroup>
 					<Input
 						placeholder={'What are you up to?'}
 						onChange={e => this._onChangeText(e)}
+						onKeyPress={e => console.log(e)}
 					/>
 					<InputGroupAddon addonType="append">
 						<Button onClick={this._onSubmitTodo}>Add to-do</Button>
 					</InputGroupAddon>
 				</InputGroup>
 				<br />
-			</>
+			</div>
 		);
 	}
 }

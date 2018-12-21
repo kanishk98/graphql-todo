@@ -4,7 +4,6 @@ import firebase from 'firebase';
 
 // Pages in router
 import Login from './components/Login';
-import TodoInput from './components/TodoInput';
 import Main from './components/Main';
 
 // Constants file
@@ -23,7 +22,6 @@ class App extends Component {
     return (
       <BrowserRouter>
         <Switch>
-          <Route exact path="/test" name="Testing components" component={TodoInput} />
           <Route exact path="/login" name="Login Page" component={Login} />
           <Route path="/" name="Home" component={Main} />
         </Switch>
