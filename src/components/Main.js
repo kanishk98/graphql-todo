@@ -1,6 +1,6 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
-import { InputGroup, InputGroupAddon, Input, Button } from 'reactstrap';
+import { InputGroup, InputGroupAddon, Input, Button, ListGroupItem, ListGroup } from 'reactstrap';
 import { Query } from 'react-apollo';
 import { todos, insert_todo } from '../graphql';
 import { client } from '../index';
@@ -47,18 +47,26 @@ export default class extends React.Component {
 	};
 
 	sendToDB = async () => {
-		const {text} = this.state;
+		const { text } = this.state;
 		const date = String(new Date().getTime());
 		const todoId = generateUUID();
 		console.log(todoId);
-		const userId = JSON.parse(window.localStorage.getItem(Constants.USER_OBJECT)).uid;
-		const result = await postAxios(insert_todo, {todoId: todoId, text: text, date: date, userId: userId});
+		const userId = JSON.parse(
+			window.localStorage.getItem(Constants.USER_OBJECT)
+		).uid;
+		const result = await postAxios(insert_todo, {
+			todoId: todoId,
+			text: text,
+			date: date,
+			userId: userId
+		});
 		console.log(result);
 	};
 
 	async componentDidMount() {
 		const result = await postAxios(todos);
 		console.log(result);
+		this.setState({list: result.data.data.todos});
 	}
 
 	render() {
@@ -79,6 +87,15 @@ export default class extends React.Component {
 					</InputGroupAddon>
 				</InputGroup>
 				<br />
+				<ListGroup>
+					{this.state.list.map(item => {
+						return (
+							<ListGroupItem tag="button" action>
+								{item.text}
+							</ListGroupItem>
+						);
+					})}
+				</ListGroup>
 			</div>
 		);
 	}

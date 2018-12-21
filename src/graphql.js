@@ -2,6 +2,7 @@ export const todos = `
 	query {
 		todos {
 			todoId
+			userId
 			text
 			date
 			completed
