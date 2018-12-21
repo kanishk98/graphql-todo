@@ -4,8 +4,10 @@ import { InputGroup, InputGroupAddon, Input, Button } from 'reactstrap';
 import { Query } from 'react-apollo';
 import { todos } from '../graphql';
 import { client } from '../index';
+import firebase from 'firebase';
 import Constants from '../Constants';
 import '../styles/Main.css';
+import { postAxios } from '../AxiosUtility';
 
 export default class extends React.Component {
 	constructor(props) {
@@ -15,6 +17,19 @@ export default class extends React.Component {
 			text: null
 		};
 	}
+
+
+	getIdToken = async () => {
+		return new Promise((resolve, reject) => {
+			firebase.auth().onAuthStateChanged(function(user) {
+				if (user) {
+					resolve(firebase.auth().currentUser.getIdToken());
+				} else {
+					reject(Error('user logged out'));
+				}
+			});
+		});
+	};
 
 	_onChangeText = ({ target }) => {
 		this.setState({ text: target.value });
@@ -26,22 +41,20 @@ export default class extends React.Component {
 		}
 	};
 
+	_onKeyPressed = ({key}) => {
+		if (key == 'Enter' && !!this.state.text) {
+			this.sendToDB();
+		}
+	}
+
 	sendToDB = () => {
 		// add API post logic here
 		console.log('sending to db');
 	};
 
-	componentDidMount() {
-		client
-			.query({
-				query: todos,
-			})
-			.then(res => {
-				console.log(res);
-			})
-			.catch(err => {
-				console.log(err);
-			});
+	async componentDidMount() {
+		const result = await postAxios(todos);
+		console.log(result);
 	}
 
 	render() {
@@ -55,7 +68,7 @@ export default class extends React.Component {
 					<Input
 						placeholder={'What are you up to?'}
 						onChange={e => this._onChangeText(e)}
-						onKeyPress={e => console.log(e)}
+						onKeyDown={e => this._onKeyPressed(e)}
 					/>
 					<InputGroupAddon addonType="append">
 						<Button onClick={this._onSubmitTodo}>Add to-do</Button>

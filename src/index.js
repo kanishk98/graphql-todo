@@ -12,10 +12,6 @@ import Constants from './Constants';
 
 const httpLink = createHttpLink({
 	uri: Constants.hasuraUrl,
-	headers: {
-		'X-Hasura-User-Id': JSON.parse(window.localStorage.getItem(Constants.USER_OBJECT)).uid,
-		'Content-Type': 'application/json',
-	},
 });
 
 export const client = new ApolloClient({

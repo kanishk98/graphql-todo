@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-export const todos = gql`
+export const todos = `
 	query {
 		todos {
 			todoId
@@ -8,8 +8,7 @@ export const todos = gql`
 			date
 			completed
 		}
-	}
-`;
+	}`
 
 export const insert_todo = gql`
 	mutation($text: String!, $date: String!, $userId: ID!) {
