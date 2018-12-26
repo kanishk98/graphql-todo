@@ -15,6 +15,7 @@ import firebase from 'firebase';
 import Constants from '../Constants';
 import '../styles/Main.css';
 import { postAxios, generateUUID } from '../AxiosUtility';
+import { renderIf } from '../renderIf';
 
 export default class extends React.Component {
 	constructor(props) {
@@ -80,6 +81,13 @@ export default class extends React.Component {
 			});
 	};
 
+	_toggleCompletion = (item, index) => {
+		item.completed = true;
+		let { list } = this.state;
+		list.splice(index, 1, item);
+		this.setState({ list: list });
+	};
+
 	async componentDidMount() {
 		const result = await postAxios(todos);
 		console.log(result);
@@ -100,17 +108,39 @@ export default class extends React.Component {
 						onKeyDown={e => this._onKeyPressed(e)}
 					/>
 					<InputGroupAddon addonType="append">
-						<Button onClick={this._onSubmitTodo}>Add to-do</Button>
+						<Button onClick={this._onSubmitTodo} color="success">
+							Add to-do
+						</Button>
 					</InputGroupAddon>
 				</InputGroup>
 				<br />
 				<ListGroup>
-					{this.state.list.map(item => {
-						return (
-							<ListGroupItem key={item.todoId} action>
-								<div>{item.text}</div>
-							</ListGroupItem>
-						);
+					{this.state.list.map((item, index) => {
+						if (item.completed) {
+							return (
+								<ListGroupItem key={item.todoId}>
+									<div
+										onClick={event =>
+											this._toggleCompletion(item, index)
+										}
+									>
+										<del>{item.text}</del>
+									</div>
+								</ListGroupItem>
+							);
+						} else {
+							return (
+								<ListGroupItem key={item.todoId}>
+									<div
+										onClick={event =>
+											this._toggleCompletion(item, index)
+										}
+									>
+										{item.text}
+									</div>
+								</ListGroupItem>
+							);
+						}
 					})}
 				</ListGroup>
 			</div>

@@ -4,3 +4,11 @@
   margin-left: 40px;
   position: relative;
 }
+
+.listItem {
+	display: flex;
+	flex: 1;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
