@@ -6,10 +6,13 @@ import {
 	Input,
 	Button,
 	ListGroupItem,
-	ListGroup
+	ListGroup,
+	Modal,
+	ModalHeader,
+	ModalFooter
 } from 'reactstrap';
 import { Query } from 'react-apollo';
-import { todos, insert_todo } from '../graphql';
+import { todos, insert_todo, update_todos } from '../graphql';
 import { client } from '../index';
 import firebase from 'firebase';
 import Constants from '../Constants';
@@ -22,7 +25,10 @@ export default class extends React.Component {
 		super(props);
 		this.state = {
 			list: [],
-			text: null
+			text: null,
+			completionModal: false,
+			itemClicked: null,
+			indexClicked: null
 		};
 	}
 
@@ -68,7 +74,7 @@ export default class extends React.Component {
 			date: date,
 			userId: userId
 		};
-		const result = postAxios(insert_todo, item)
+		postAxios(insert_todo, item)
 			.then(res => {
 				console.log(res);
 				let { list } = this.state;
@@ -77,16 +83,38 @@ export default class extends React.Component {
 			})
 			.catch(err => {
 				console.log(err);
-				// TODO: Make error banner render at this time
+				// TODO: Make error banner render here
 			});
 	};
 
-	_toggleCompletion = (item, index) => {
+	_toggleCompletion = () => {
+		const item = this.state.itemClicked;
+		const index = this.state.indexClicked;
 		item.completed = true;
 		let { list } = this.state;
 		list.splice(index, 1, item);
-		this.setState({ list: list });
+		this.setState({ list: list, completionModal: false });
+		postAxios(update_todos, item.todoId)
+			.then(res => {
+				console.log(res);
+			})
+			.catch(err => {
+				console.log(err);
+				// TODO: Make error banner render here
+			});
 	};
+
+	_invokeCompletionModal = (item, index) => {
+		this.setState({
+			completionModal: true,
+			itemClicked: item,
+			indexClicked: index
+		});
+	};
+
+	_disableCompletionModal = () => {
+		this.setState({ completionModal: false });
+	}
 
 	async componentDidMount() {
 		const result = await postAxios(todos);
@@ -101,6 +129,20 @@ export default class extends React.Component {
 		}
 		return (
 			<div className="input">
+				<Modal isOpen={this.state.completionModal}>
+					<ModalHeader>Mark this task as completed?</ModalHeader>
+					<ModalFooter>
+						<Button color="primary" onClick={this._toggleCompletion}>
+							Yes, I'm done
+						</Button>{' '}
+						<Button
+							color="secondary"
+							onClick={this._disableCompletionModal}
+						>
+							No
+						</Button>
+					</ModalFooter>
+				</Modal>
 				<InputGroup>
 					<Input
 						placeholder={'What are you up to?'}
@@ -119,11 +161,7 @@ export default class extends React.Component {
 						if (item.completed) {
 							return (
 								<ListGroupItem key={item.todoId}>
-									<div
-										onClick={event =>
-											this._toggleCompletion(item, index)
-										}
-									>
+									<div>
 										<del>{item.text}</del>
 									</div>
 								</ListGroupItem>
@@ -133,7 +171,7 @@ export default class extends React.Component {
 								<ListGroupItem key={item.todoId}>
 									<div
 										onClick={event =>
-											this._toggleCompletion(item, index)
+											this._invokeCompletionModal(item, index)
 										}
 									>
 										{item.text}

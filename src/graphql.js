@@ -24,3 +24,11 @@ export const insert_user = `
 		}
 	}
 `
+
+export const update_todos = `
+	mutation($todoId: String!) {
+		update_todos(where: { todoId: { _eq: $todoId }}, _set: { completed: true }) {
+			affected_rows
+		}
+	}
+`
