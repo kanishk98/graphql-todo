@@ -11,7 +11,6 @@ import {
 	ModalHeader,
 	ModalFooter
 } from 'reactstrap';
-import { Query } from 'react-apollo';
 import { todos, insert_todo, update_todos } from '../graphql';
 import { client } from '../index';
 import firebase from 'firebase';
@@ -117,13 +116,31 @@ export default class extends React.Component {
 		this.setState({ completionModal: false });
 	}
 
-	async componentDidMount() {
-		const result = await postAxios(todos);
-		console.log(result);
-		this.setState({ list: result.data.data.todos });
+	componentWillMount() {
+		// browser caching, pre-emptively load old todos while database responds
+		try {
+			const list = JSON.parse(window.localStorage.getItem(Constants.USER_TODOS));
+			console.log(list);
+			this.setState({ list: list });
+		} catch (err) {
+			console.log(err);
+		}
+	}
+
+	componentDidMount() {
+		postAxios(todos)
+		.then(res => {
+			const list = res.data.data.todos;
+			window.localStorage.setItem(Constants.USER_TODOS, JSON.stringify(list));
+			this.setState({ list: list });
+		})
+		.catch(err => {
+			console.log(err);
+		});
 	}
 
 	render() {
+		console.log(this.state);
 		if (window.localStorage.getItem(Constants.LOGGED_IN) != 'yes') {
 			// redirect user to login page
 			return <Redirect to="/login" />;
