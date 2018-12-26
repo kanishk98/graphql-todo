@@ -92,9 +92,10 @@ export default class extends React.Component {
 		const index = this.state.indexClicked;
 		item.completed = true;
 		let { list } = this.state;
-		list.splice(index, 1, item);
+		list.splice(index, 1);
+		list.push(item);
 		this.setState({ list: list, completionModal: false });
-		postAxios(update_todos, item.todoId)
+		postAxios(update_todos, { todoId: item.todoId })
 			.then(res => {
 				console.log(res);
 			})
