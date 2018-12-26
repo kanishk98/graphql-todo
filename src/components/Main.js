@@ -6,8 +6,6 @@ import {
 	Input,
 	Button,
 	ListGroupItem,
-	ListGroupItemHeading,
-	ListGroupItemText,
 	ListGroup,
 	Modal,
 	ModalHeader,
@@ -116,29 +114,12 @@ export default class extends React.Component {
 
 	_disableCompletionModal = () => {
 		this.setState({ completionModal: false });
-	};
-
-	_convertDate = dateString => {
-		const date = new Date();
-		date.setTime(dateString);
-		return date;
-	};
-
-	_compareDates = (a, b) => {
-		if (Number(a.date) < Number(b.date)) {
-			return 1;
-		} else if (Number(a.date) > Number(b.date)) {
-			return -1;
-		}
-		return 0;
 	}
 
 	componentWillMount() {
 		// browser caching, pre-emptively load old todos while database responds
 		try {
-			const list = JSON.parse(
-				window.localStorage.getItem(Constants.USER_TODOS)
-			);
+			const list = JSON.parse(window.localStorage.getItem(Constants.USER_TODOS));
 			console.log(list);
 			this.setState({ list: list });
 		} catch (err) {
@@ -148,20 +129,14 @@ export default class extends React.Component {
 
 	componentDidMount() {
 		postAxios(todos)
-			.then(res => {
-				const list = res.data.data.todos;
-				list.map(item => {
-					item.date = String(this._convertDate(item.date));
-				});
-				this.setState({ list: list });
-				window.localStorage.setItem(
-					Constants.USER_TODOS,
-					JSON.stringify(list)
-				);
-			})
-			.catch(err => {
-				console.log(err);
-			});
+		.then(res => {
+			const list = res.data.data.todos;
+			window.localStorage.setItem(Constants.USER_TODOS, JSON.stringify(list));
+			this.setState({ list: list });
+		})
+		.catch(err => {
+			console.log(err);
+		});
 	}
 
 	render() {
@@ -175,10 +150,7 @@ export default class extends React.Component {
 				<Modal isOpen={this.state.completionModal}>
 					<ModalHeader>Mark this task as completed?</ModalHeader>
 					<ModalFooter>
-						<Button
-							color="primary"
-							onClick={this._toggleCompletion}
-						>
+						<Button color="primary" onClick={this._toggleCompletion}>
 							Yes, I'm done
 						</Button>{' '}
 						<Button
@@ -207,30 +179,21 @@ export default class extends React.Component {
 						if (item.completed) {
 							return (
 								<ListGroupItem key={item.todoId}>
-									<ListGroupItemHeading>
+									<div>
 										<del>{item.text}</del>
-									</ListGroupItemHeading>
-									<ListGroupItemText>
-										<del>{item.date}</del>
-									</ListGroupItemText>
+									</div>
 								</ListGroupItem>
 							);
 						} else {
 							return (
 								<ListGroupItem key={item.todoId}>
-									<ListGroupItemHeading
+									<div
 										onClick={event =>
-											this._invokeCompletionModal(
-												item,
-												index
-											)
+											this._invokeCompletionModal(item, index)
 										}
 									>
 										{item.text}
-									</ListGroupItemHeading>
-									<ListGroupItemText>
-										{item.date}
-									</ListGroupItemText>
+									</div>
 								</ListGroupItem>
 							);
 						}
