@@ -120,7 +120,9 @@ export default class extends React.Component {
 		// browser caching, pre-emptively load old todos while database responds
 		try {
 			const list = JSON.parse(window.localStorage.getItem(Constants.USER_TODOS));
-			console.log(list);
+			// check length to confirm there are no problems with list
+			// that can fail map() in render()
+			const length = list.length;
 			this.setState({ list: list });
 		} catch (err) {
 			console.log(err);
