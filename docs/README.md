@@ -100,10 +100,146 @@ However, we're executing these queries as the admin right now. We need to give c
 Hasura's engine makes IAM really easy for us. Under data, choose a table and then click on the Permissions tab. 
 Enter a new role (I'll just call mine user, and set permissions for different operations there).
 
-[!Permissions](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/permissions.png)
+![Permissions](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/permissions.png)
 
 This helps you define different user roles quickly, and was a personal delight for me. 
 
+> This may seem trivial right now, but is actually an important step to understanding Hasura's engine: when we specify in the permissions policy that we require a condition (say, the equality condition on `userId`, as in my case) to be true for a database operation to complete, then our GraphQL API expects the `X-Hasura-User-Id` either as a header or as an object being returned from a webhook set up for authentication. I'll cover this down below. 
+
 ## Auth
 
-To set up a login system, we'll use Firebase. Now, building the front-end system for that is trivial - we need to log on to the [Google Cloud Console](https://console.cloud.google.com), create a new project, and then make a new Firebase app on the [Firebase console](https://console.firebase.google.com).
+### Front-end
+
+To set up a login system, we'll use Firebase. Now, building the front-end system for that is trivial - we need to log on to the [Google Cloud Console](https://console.cloud.google.com), create a new project, and then make a new Firebase app on the [Firebase console](https://console.firebase.google.com). Now we'll run `$ npm install --save firebase` and follow the instructions for Node.js on [this Google-provided tutorial](). We should have a function that looks like this at the end:
+
+```js
+_onClickLogin = async () => {
+    firebase
+      .auth()
+      .signInWithPopup(googleProvider)
+      .then(async res => {
+        const token = res.credential.accessToken;
+        const user = res.user;
+        console.log(res);
+        await window.localStorage.setItem(Constants.LOGGED_IN, 'yes');
+        await window.localStorage.setItem(Constants.USER_OBJECT, JSON.stringify(user));
+        await window.localStorage.setItem(Constants.USER_TOKEN, JSON.stringify(token));
+        this.setState({ loggedIn: true });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+```
+
+Awesome. This handles auth for the front-end web app, but we also need to handle auth for our GraphQL API. Again, Hasura smoothens things out for us.
+
+### API
+
+We'll use Firebase Cloud Functions to authenticate requests made to our GraphQL API. Why? Because we're already using Firebase, and I feel it's best to stick to as few platforms as possible as long as functionality stays the same. 
+
+[Hasura Auth basics](https://docs.hasura.io/1.0/graphql/manual/auth/basics.html) explain the auth systems for the Engine very well, so I won't do that, but we shouldn't be sending key user information along with our API request headers.
+To handle that constraint, we'll be using auth webhooks instead.
+
+Before we do that, Hasura requires us to specify an access key on the API console. This is pretty easy. Head over to the API dashboard at Heroku's Settings, and click on Reveal Config Vars, as shown below:
+
+![Config variables](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/config_vars.png)
+
+Add a config variable `HASURA_GRAPHQL_ACCESS_KEY` and set it to whatever value seems best. You'll now also need this to log in to the API console. 
+
+> Full disclosure: I properly understood how auth webhooks work only when I completed this app. Pretty cool stuff.
+
+While [Hasura's sample](https://github.com/hasura/graphql-engine/tree/master/community/boilerplates/auth-webhooks/firebase-cloud-functions/index.js) on this topic is a great place to start, I think we can do a little bit better by skipping the need for a `config.js` file. Instead, as shown in the webhook handler I wrote [here](https://github.com/kanishk98/graphql-todo/blob/master/webhook/functions/index.js), we simply use the `functions.config()` method to initialise the app with our Firebase admin credentials. At this point, it's probably a wise idea to make a separate `webhook/` folder inside our main repository and continue working there.
+
+To initialise the Firebase functions repository, we need to have the firebase CLI installed. Briefly, we need to do the following:
+
+```sh
+$ npm install -g firebase-tools
+$ cd webhook
+$ firebase init
+```
+
+Firebase will ask us a bunch of questions. Once that's done, all we have to do is hit `firebase deploy`.
+
+Once we do that, we'll get a Firebase function URL in our terminal. Copy that, head over to the config variables section in our Heroku app dashboard, and add another config variable - `HASURA_GRAPHQL_AUTH_HOOK`. Set this to the URL of your Firebase function. (It should be something along the lines of `https://us-central1-whatever-app.cloudfunctions.net/yourwebhook`). This was required so that Hasura Engine where to request user information from when we make requests to it. 
+
+## Front-end work
+
+Alright, our API's running well, our database is secure, and we know how to handle login. Let's quickly go over how I built the front-end for this app.
+
+### Essentials
+
+We've already got a basic front-end app running that accepts Google login information. We'll now define another route (I'm using the `react-router-dom` package for this) and declare the real UI components of our app here. Following my [code](https://github.com/kanishk98/graphql-todo/blob/master/src/components/Main.js) might help for this section. 
+
+I've used the `reactstrap` package for quickly designing common components like the input bar, list items, and relevant modals. 
+
+We'll define the obvious `onClick` and `onSubmit` methods to get the text of our todo item in the state, but how do we communicate this data to our GraphQL API?
+
+We'll add a new file `src/graphql.js`. We'll export constants that are wrapped in a backtick string, something like this:
+```js
+export const update_todos = `
+  mutation($todoId: String!) {
+    update_todos(where: { todoId: { _eq: $todoId }}, _set: { completed: true }) {
+      affected_rows
+    }
+  }
+```
+The above constant accepts the `todoId` as an argument. We just need to handle the actual *sending* of the request now. 
+
+There are two ways to do this:
+1. Using a GraphQL client library like Apollo (recommended for larger projects)
+2. Writing a simple utility `.js` file to handle requests (recommended for learning more about the architecture behind-the-scenes).
+
+As you may have guessed, I went with 2. And it turns out that Hasura helps us with that too - the same [page](https://github.com/hasura/graphql-engine/tree/master/community/boilerplates/auth-webhooks/firebase-cloud-functions) which we used while setting up our auth webhook details how to write such a file. So without adding any unnecessarily heavy dependencies to our project, we can just use this system.
+
+I modified the file as `AxiosUtility.js` in my repository, changing the main API code to the following:
+```js
+export const postAxios = async (queryString, variables) => {
+  const idToken = await getIdToken();
+
+  const axios = axiosBase.create({
+    baseURL: Constants.hasuraUrl,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + idToken
+    },
+    responseType: 'json',
+    method: 'post'
+  });
+  console.log(variables);
+  return await axios({
+    data: {
+      query: queryString,
+      variables: variables
+    }
+  }).catch(({ response: r }) => console.log(r));
+};
+```
+
+As you can see, it accepts query variables also. 
+
+Having written mutation and query operations, we can quickly implement adding users, adding todos, and retrieving todos for a given user by calling the `postAxios()` method above. 
+Once we're done with that, we'll have to test our app. Navigate to the root directory of the React project and run `$ npm start` (or `$ yarn run`, whichever you prefer).
+
+![Login test](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/login_test.png)
+
+![Todos](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/todos.png)
+
+As you may see in the above picture, some of the todo items have been struck out. That's what I'll come to next.
+
+### Complete/incomplete tasks
+
+We should probably allow users to mark a task as completed. I did this by rendering a simple modal every time someone clicks on a todo item, like this:
+
+![Completion modal](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/completion_modal.png)
+
+Clicking yes invokes the update operation I wrote above, and updates the task as completed. Completed tasks are struck off and moved to the bottom by a simple `this.setState()` method call.
+
+
+## Possible improvements
+
+A todo app should certainly also allow users to set a time when the task is due and be reminded accordingly. One idea that I have for implementing this is defining an event trigger on the Hasura engine that sends forward this date information to a notification handler service (maybe another Firebase Cloud Function?) that delivers the notification back to the webpage. Since this use case makes more sense for a mobile app than a web app, I haven't written it yet. Feel free to contribute with something similar though!
+
+---
+
+That marks the end of this tutorial. If you just want to try what I've built before getting your hands dirty, feel free to clone this project and run an `$ npm install && npm start` to play around. (You'll have to deal with access keys, of course).

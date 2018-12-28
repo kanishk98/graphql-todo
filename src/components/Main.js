@@ -63,7 +63,7 @@ export default class extends React.Component {
 		const { text } = this.state;
 		const date = String(new Date().getTime());
 		const todoId = generateUUID();
-		console.log(todoId);
+		// console.log(todoId);
 		const userId = JSON.parse(
 			window.localStorage.getItem(Constants.USER_OBJECT)
 		).uid;
@@ -75,13 +75,13 @@ export default class extends React.Component {
 		};
 		postAxios(insert_todo, item)
 			.then(res => {
-				console.log(res);
+				// console.log(res);
 				let { list } = this.state;
 				list.splice(0, 0, item);
 				this.setState({ list: list });
 			})
 			.catch(err => {
-				console.log(err);
+				// console.log(err);
 				// TODO: Make error banner render here
 			});
 	};
@@ -96,10 +96,10 @@ export default class extends React.Component {
 		this.setState({ list: list, completionModal: false });
 		postAxios(update_todos, { todoId: item.todoId })
 			.then(res => {
-				console.log(res);
+				// console.log(res);
 			})
 			.catch(err => {
-				console.log(err);
+				// console.log(err);
 				// TODO: Make error banner render here
 			});
 	};
@@ -125,7 +125,7 @@ export default class extends React.Component {
 			const length = list.length;
 			this.setState({ list: list });
 		} catch (err) {
-			console.log(err);
+			// console.log(err);
 		}
 	}
 
@@ -137,12 +137,12 @@ export default class extends React.Component {
 			this.setState({ list: list });
 		})
 		.catch(err => {
-			console.log(err);
+			// console.log(err);
 		});
 	}
 
 	render() {
-		console.log(this.state);
+		// console.log(this.state);
 		if (window.localStorage.getItem(Constants.LOGGED_IN) != 'yes') {
 			// redirect user to login page
 			return <Redirect to="/login" />;
