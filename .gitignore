@@ -1,3 +1,7 @@
+# SendGrid files
+sendgrid.env
+emails.js
+
 # Secrets file
 Constants.js
 

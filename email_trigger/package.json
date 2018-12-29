@@ -1,0 +1,29 @@
+{
+  "name": "email_trigger",
+  "version": "1.0.0",
+  "description": "Email webhook activated by Hasura Engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kanishk98/graphql-todo.git"
+  },
+  "keywords": [
+    "hasura",
+    "webhook",
+    "email",
+    "sendgrid"
+  ],
+  "author": "Kanishk Kakar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kanishk98/graphql-todo/issues"
+  },
+  "homepage": "https://github.com/kanishk98/graphql-todo#readme",
+  "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
+    "express": "^4.16.4"
+  }
+}
