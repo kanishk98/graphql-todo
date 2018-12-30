@@ -143,7 +143,7 @@ To handle that constraint, we'll be using auth webhooks instead.
 
 Before we do that, Hasura requires us to specify an access key on the API console. This is pretty easy. Head over to the API dashboard at Heroku's Settings, and click on Reveal Config Vars, as shown below:
 
-![Config variables](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/config_vars.png)
+![Config variables](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/config_vars.PNG)
 
 Add a config variable `HASURA_GRAPHQL_ACCESS_KEY` and set it to whatever value seems best. You'll now also need this to log in to the API console. 
 
@@ -231,7 +231,7 @@ As you may see in the above picture, some of the todo items have been struck out
 
 We should probably allow users to mark a task as completed. I did this by rendering a simple modal every time someone clicks on a todo item, like this:
 
-![Completion modal](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/completion_modal.png)
+![Completion modal](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/completion_modal.PNG)
 
 Clicking yes invokes the update operation I wrote above, and updates the task as completed. Completed tasks are struck off and moved to the bottom by a simple `this.setState()` method call.
 
