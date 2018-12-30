@@ -1,3 +1,6 @@
+service_account_key.json
+config.js
+
 # SendGrid files
 sendgrid.env
 emails.js

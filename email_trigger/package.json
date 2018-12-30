@@ -24,6 +24,7 @@
   "homepage": "https://github.com/kanishk98/graphql-todo#readme",
   "dependencies": {
     "@sendgrid/mail": "^6.3.1",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "firebase-admin": "^6.4.0"
   }
 }

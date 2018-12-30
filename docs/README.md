@@ -235,10 +235,98 @@ We should probably allow users to mark a task as completed. I did this by render
 
 Clicking yes invokes the update operation I wrote above, and updates the task as completed. Completed tasks are struck off and moved to the bottom by a simple `this.setState()` method call.
 
+## Event triggers
 
-## Possible improvements
+Let's take full advantage of the features Hasura gives us for our app here. We'll email the user every time they register a todo. How does this help? Well, there's always the case of an account getting compromised, but in a to-do app, this is mostly for the purpose of a demo of what the engine can do.
 
-A todo app should certainly also allow users to set a time when the task is due and be reminded accordingly. One idea that I have for implementing this is defining an event trigger on the Hasura engine that sends forward this date information to a notification handler service (maybe another Firebase Cloud Function?) that delivers the notification back to the webpage. Since this use case makes more sense for a mobile app than a web app, I haven't written it yet. Feel free to contribute with something similar though!
+Since Firebase Cloud Functions does not send requests to external APIs until we configure a billing account, we'll skip that for now and write our own Express web server using Node.js. We'll deploy this on an AWS EC2 instance, and use [SendGrid](https://www.sendgrid.com) to send emails to the user concerned. 
+
+So how do we handle this? Remember how we stored each Firebase UID along with the corresponding todo? The `firebase-admin` package allows us to use that to get the email of the user. So our Express POST endpoint looks something like this:
+
+```js
+app.post('/', (req, res) => {
+  // obtain data inserted
+  const insertedTodo = req.body.event.data.new;
+  const sgMail = require('@sendgrid/mail');
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+  admin
+    .auth()
+    .getUser(insertedTodo.userId)
+    .then(userRecord => {
+      const userEmail = userRecord.toJSON().email;
+      const msg = {
+        to: emails.to,
+        from: emails.from,
+        subject: "Kanishk's GraphQL To-Do app",
+        text:
+          'You added a todo that says ' +
+          insertedTodo.text +
+          ' with an ID = ' +
+          insertedTodo.todoId
+      };
+      sgMail
+        .send(msg)
+        .then(resolve => {
+          res.sendStatus(200);
+        })
+        .catch(error => {
+          console.log(error);
+          res.sendStatus(500);
+        });
+    })
+    .catch(error => console.log(error));
+});
+```
+
+The `req.body.event.data.new` is sent to us by the Hasura GraphQL Engine, and contains the data in the newly inserted todo item. 
+
+We shouldn't be exposing our SendGrid API key, so we should run the following commands in our terminal:
+
+```sh
+echo "export SENDGRID_API_KEY='YOUR_API_KEY'" > sendgrid.env
+echo "sendgrid.env" >> .gitignore
+source ./sendgrid.env
+```
+
+The [SendGrid guide](https://app.sendgrid.com/guide/integrate/langs/nodejs) has excellent documentation on how to set up a mailing system with Node.js. 
+
+Now comes the final and most important part: setting up event triggers for this webhook. 
+Before we do that, however, we need to deploy this server somewhere. I chose to use a standard EC2 instance running Ubuntu for this. 
+Deploying is relatively easy with `nginx` reverse proxy and `pm2` process manager, and this [DigitalOcean tutorial] helps a lot with learning more about this. 
+
+At the end of setting up this deployment, we should have a site config file that looks like this in the `/etc/nginx/sites-available/` directory:
+
+```
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+
+  server_name <YOUR_SERVER_IP_ADDRESS>;
+
+  location / {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-NginX-Proxy true;
+        proxy_pass http://127.0.0.1:3000/;
+        proxy_redirect off;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_redirect off;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+}
+
+```
+
+We'll now head over to the Event Trigger section in our Hasura API Explorer and set up this webhook for insertions there. The UI is pretty self-explanatory, so I'm just gonna attach a screenshot to explain what you should be doing. 
+
+[!Triggers pane](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/trigger.png)
+
+And we're all set! Try inserting an item, and it should show up in your email (probably inside Spam, but that works for proof-of-concept).
 
 ---
 
