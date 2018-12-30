@@ -10,7 +10,7 @@ However, GraphQL is not without its problems. Some of them are:
 
 Speaking from personal experience, that last one is definitely a nightmare. 
 
-That's where Hasura's GraphQL Engine comes in. It provides an easy kickstart to GraphQL development by giving the developer access to Heroku deployment (or Docker container) for a GraphQL server that can perform queries on a connected PostgreSQL database. All we have to do is define our good old table schema and the GraphQL SDL is generated for us (as are the templates for common queries, mutations, and subscriptions). If you know Prisma, Hasura's engine will sound familiar, with one key difference - Prisma is an additional database server that interfaces the GraphQL API with the underlying database. You still need to write resolvers that handle queries made to a GraphQL server you write, and you have to define your schema in GraphQL. Hasura allows your front-end to call the GraphQL API directly, just by using a relational Postgres schema you define. 
+That's where Hasura's GraphQL Engine comes in. It provides an easy kickstart to GraphQL development by giving the developer access to Heroku deployment (or Docker container) for a GraphQL server that can perform queries on a connected PostgreSQL database. All we have to do is define our good old table schema and the GraphQL SDL is generated for us (as are the templates for common queries, mutations, and subscriptions). If you know Prisma, Hasura's engine *might* sound familiar, but they're actually quite different. For example, Prisma is an additional database server that interfaces the GraphQL API with the underlying database. You still need to write resolvers that handle queries made to a GraphQL server you write, and you have to define your schema in GraphQL. Hasura allows your front-end to call the GraphQL API directly, just by using a relational Postgres schema. 
 
 With that context, let's get started with building the app. 
 
@@ -37,7 +37,7 @@ Click on 'Deploy app' and we can move on to the next step.
 
 If you've followed the above steps correctly, you should see a dashboard similar to this image below (ignore the headers in the screenshot for now, we'll come to that later)
 
-![Hasura API explorer](https://raw.githubuser.content.com/kanishk98/graphql-todo/master/assets/api_explorer_dashboard.png)
+![Hasura API explorer](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/api_explorer_dashboard.png)
 
 Let's click on Data in the top row and define our schema.
 
@@ -221,9 +221,9 @@ As you can see, it accepts query variables also.
 Having written mutation and query operations, we can quickly implement adding users, adding todos, and retrieving todos for a given user by calling the `postAxios()` method above. 
 Once we're done with that, we'll have to test our app. Navigate to the root directory of the React project and run `$ npm start` (or `$ yarn run`, whichever you prefer).
 
-![Login test](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/login_test.png)
+![Login test](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/login_test.png)
 
-![Todos](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/todos.png)
+![Todos](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/todos.png)
 
 As you may see in the above picture, some of the todo items have been struck out. That's what I'll come to next.
 
@@ -250,13 +250,15 @@ app.post('/', (req, res) => {
   const sgMail = require('@sendgrid/mail');
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+  // emails.from is the email ID configured for use with SendGrid
+  
   admin
     .auth()
     .getUser(insertedTodo.userId)
     .then(userRecord => {
       const userEmail = userRecord.toJSON().email;
       const msg = {
-        to: emails.to,
+        to: userEmail,
         from: emails.from,
         subject: "Kanishk's GraphQL To-Do app",
         text:
@@ -293,7 +295,7 @@ The [SendGrid guide](https://app.sendgrid.com/guide/integrate/langs/nodejs) has 
 
 Now comes the final and most important part: setting up event triggers for this webhook. 
 Before we do that, however, we need to deploy this server somewhere. I chose to use a standard EC2 instance running Ubuntu for this. 
-Deploying is relatively easy with `nginx` reverse proxy and `pm2` process manager, and this [DigitalOcean tutorial] helps a lot with learning more about this. 
+Deploying is relatively easy with `nginx` reverse proxy and `pm2` process manager, and this [DigitalOcean tutorial](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-18-04) helps a lot with learning more about this. 
 
 At the end of setting up this deployment, we should have a site config file that looks like this in the `/etc/nginx/sites-available/` directory:
 
@@ -324,7 +326,7 @@ server {
 
 We'll now head over to the Event Trigger section in our Hasura API Explorer and set up this webhook for insertions there. The UI is pretty self-explanatory, so I'm just gonna attach a screenshot to explain what you should be doing. 
 
-[!Triggers pane](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/trigger.png)
+![Triggers pane](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/trigger.png)
 
 And we're all set! Try inserting an item, and it should show up in your email (probably inside Spam, but that works for proof-of-concept).
 
