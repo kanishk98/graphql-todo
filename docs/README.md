@@ -326,9 +326,32 @@ server {
 
 We'll now head over to the Event Trigger section in our Hasura API Explorer and set up this webhook for insertions there. The UI is pretty self-explanatory, so I'm just gonna attach a screenshot to explain what you should be doing. 
 
-![Triggers pane](https://rawgithubusercontent.com/kanishk98/graphql-todo/master/assets/trigger.png)
+![Triggers pane](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/trigger.png)
 
 And we're all set! Try inserting an item, and it should show up in your email (probably inside Spam, but that works for proof-of-concept).
+
+## Deployment
+
+We might have a working repository on our local machine, but that's of no use if we can't hand it out to other people for feedback. Painless deployment of React.js apps is [made easy with Heroku's buildpacks](https://blog.heroku.com/deploying-react-with-zero-configuration).
+
+TL;DR fire up a terminal and enter the following commands:
+```sh
+cd todoapp/
+heroku create -b https://github.com/mars/create-react-app-buildpack.git
+git add .
+git commit -m "react-create-app on Heroku"
+git push heroku master
+heroku open
+```
+
+This should open up your React.js app on a free dyno on Heroku.
+
+Try logging in. You'll notice that the Google login window opens and then closes automatically. That's because Firebase doesn't recognise the domain of our app yet. Easily fixed - log on to the Firebase console, click on Authentication, and then add the app's domain as an authorized domain. 
+This is what this should like:
+
+![Auth domain](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/auth_domain.png)
+
+That should be enough to deploy the app.  
 
 ---
 

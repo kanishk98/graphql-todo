@@ -9,11 +9,6 @@ admin.initializeApp({
 	credential: admin.credential.cert(serviceAccountKey),
 	databaseURL: config.databaseURL
 });
-admin
-	.auth()
-	.getUser('vWN6GcLLQAYiN2HOaV3HkULSNgx2')
-	.then(userRecord => console.log(userRecord.toJSON()))
-	.catch(err => console.log(err));
 
 app.use(express.json());
 
@@ -29,7 +24,7 @@ app.post('/', (req, res) => {
 		.then(userRecord => {
 			const userEmail = userRecord.toJSON().email;
 			const msg = {
-				to: emails.to,
+				to: userEmail,
 				from: emails.from,
 				subject: "Kanishk's GraphQL To-Do app",
 				text:
