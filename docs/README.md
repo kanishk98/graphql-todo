@@ -351,7 +351,9 @@ This is what this should like:
 
 ![Auth domain](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/auth_domain.png)
 
-That should be enough to deploy the app.  
+That should be enough to deploy the app. I've attached a screenshot of my final deployed app:
+
+![Deployed app](https://raw.githubusercontent.com/kanishk98/graphql-todo/master/assets/deployed.png)
 
 ## Possible improvements
 
