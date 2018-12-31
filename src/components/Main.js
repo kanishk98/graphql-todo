@@ -13,7 +13,6 @@ import {
 	Alert
 } from 'reactstrap';
 import { todos, insert_todo, update_todos } from '../graphql';
-import { client } from '../index';
 import firebase from 'firebase';
 import Constants from '../Constants';
 import '../styles/Main.css';
@@ -25,7 +24,7 @@ export default class extends React.Component {
 		super(props);
 		this.state = {
 			list: [],
-			text: null,
+			text: '',
 			completionModal: false,
 			itemClicked: null,
 			indexClicked: null
