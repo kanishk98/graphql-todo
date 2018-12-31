@@ -1,6 +1,6 @@
 export const todos = `
 	query {
-		todos {
+		todos(order_by: { date: desc_nulls_last }) {
 			todoId
 			userId
 			text

@@ -91,8 +91,7 @@ export default class extends React.Component {
 		const index = this.state.indexClicked;
 		item.completed = true;
 		let { list } = this.state;
-		list.splice(index, 1);
-		list.push(item);
+		list.splice(index, 1, item);
 		this.setState({ list: list, completionModal: false });
 		postAxios(update_todos, { todoId: item.todoId })
 			.then(res => {
@@ -114,12 +113,14 @@ export default class extends React.Component {
 
 	_disableCompletionModal = () => {
 		this.setState({ completionModal: false });
-	}
+	};
 
 	componentWillMount() {
 		// browser caching, pre-emptively load old todos while database responds
 		try {
-			const list = JSON.parse(window.localStorage.getItem(Constants.USER_TODOS));
+			const list = JSON.parse(
+				window.localStorage.getItem(Constants.USER_TODOS)
+			);
 			// check length to confirm there are no problems with list
 			// that can fail map() in render()
 			const length = list.length;
@@ -131,14 +132,17 @@ export default class extends React.Component {
 
 	componentDidMount() {
 		postAxios(todos)
-		.then(res => {
-			const list = res.data.data.todos;
-			window.localStorage.setItem(Constants.USER_TODOS, JSON.stringify(list));
-			this.setState({ list: list });
-		})
-		.catch(err => {
-			// console.log(err);
-		});
+			.then(res => {
+				const list = res.data.data.todos;
+				window.localStorage.setItem(
+					Constants.USER_TODOS,
+					JSON.stringify(list)
+				);
+				this.setState({ list: list });
+			})
+			.catch(err => {
+				// console.log(err);
+			});
 	}
 
 	render() {
@@ -152,7 +156,10 @@ export default class extends React.Component {
 				<Modal isOpen={this.state.completionModal}>
 					<ModalHeader>Mark this task as completed?</ModalHeader>
 					<ModalFooter>
-						<Button color="primary" onClick={this._toggleCompletion}>
+						<Button
+							color="primary"
+							onClick={this._toggleCompletion}
+						>
 							Yes, I'm done
 						</Button>{' '}
 						<Button
@@ -188,14 +195,15 @@ export default class extends React.Component {
 							);
 						} else {
 							return (
-								<ListGroupItem key={item.todoId}>
-									<div
-										onClick={event =>
-											this._invokeCompletionModal(item, index)
-										}
-									>
-										{item.text}
-									</div>
+								<ListGroupItem
+									tag="button"
+									action
+									onClick={event =>
+										this._invokeCompletionModal(item, index)
+									}
+									key={item.todoId}
+								>
+									<div>{item.text}</div>
 								</ListGroupItem>
 							);
 						}
