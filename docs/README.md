@@ -356,6 +356,7 @@ That should be enough to deploy the app.
 ## Possible improvements
 
 A professional todo app should also allow users to set deadlines for their tasks and allow sorting of todo items as well. Check out [SortableJS](https://github.com/SortableJS/Sortable) if you'd like to reorder todo items on drag. I haven't covered such improvements for now because that doesn't really cover any new ground as far as Hasura's engine is concerned - it's mostly front-end work. Submit a PR if you'd like to implement the same. 
+
 ---
 
 That marks the end of this tutorial. If you just want to try what I've built before getting your hands dirty, feel free to clone this project and run an `$ npm install && npm start` to play around. (You'll have to deal with access keys, of course).
