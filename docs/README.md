@@ -360,3 +360,9 @@ A professional todo app should also allow users to set deadlines for their tasks
 ---
 
 That marks the end of this tutorial. If you just want to try what I've built before getting your hands dirty, feel free to clone this project and run an `$ npm install && npm start` to play around. (You'll have to deal with access keys, of course).
+
+> Personally, I learnt quite a few things while working on this app. Some of them are:
+>   1. The internals of the Hasura GraphQL Engine and how it connects to Heroku
+>   2. Using SendGrid for emails (gonna send tons of spam now)
+>   3. Writing auth webhooks
+>   4. Writing a properly documented tutorial with relevant links
