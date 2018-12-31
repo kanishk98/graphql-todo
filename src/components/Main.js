@@ -9,7 +9,8 @@ import {
 	ListGroup,
 	Modal,
 	ModalHeader,
-	ModalFooter
+	ModalFooter,
+	Alert
 } from 'reactstrap';
 import { todos, insert_todo, update_todos } from '../graphql';
 import { client } from '../index';
@@ -84,6 +85,7 @@ export default class extends React.Component {
 				// console.log(err);
 				// TODO: Make error banner render here
 			});
+		this.setState({ text: '' });
 	};
 
 	_toggleCompletion = () => {
@@ -101,6 +103,7 @@ export default class extends React.Component {
 				// console.log(err);
 				// TODO: Make error banner render here
 			});
+		window.localStorage.setItem(Constants.USER_TODOS, JSON.stringify(list));
 	};
 
 	_invokeCompletionModal = (item, index) => {
@@ -175,6 +178,7 @@ export default class extends React.Component {
 						placeholder={'What are you up to?'}
 						onChange={e => this._onChangeText(e)}
 						onKeyDown={e => this._onKeyPressed(e)}
+						value={this.state.text}
 					/>
 					<InputGroupAddon addonType="append">
 						<Button onClick={this._onSubmitTodo} color="success">
@@ -182,6 +186,12 @@ export default class extends React.Component {
 						</Button>
 					</InputGroupAddon>
 				</InputGroup>
+				<br />
+				<Alert color="primary">
+					Details of created to-do items are emailed to you (checking
+					spam is a good idea). Click on items to mark them as
+					complete.
+				</Alert>
 				<br />
 				<ListGroup>
 					{this.state.list.map((item, index) => {
