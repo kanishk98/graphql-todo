@@ -16,7 +16,7 @@ app.post('/', (req, res) => {
 	// obtain data inserted
 	const insertedTodo = req.body.event.data.new;
 	const sgMail = require('@sendgrid/mail');
-	sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+	sgMail.setApiKey(config.sendgridApiKey);
 
 	admin
 		.auth()
